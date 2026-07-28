@@ -2,17 +2,20 @@
   "name": "clinic-front-desk-os",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",
     "@expo/vector-icons": "^14.0.0",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "expo": "~52.0.0",
+    "firebase": "^11.6.0",
     "expo-asset": "~11.0.5",
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
@@ -26,6 +29,8 @@
     "react-native-web": "~0.19.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.0"
+    "@babel/core": "^7.25.0",
+    "@types/react": "~18.3.12",
+    "typescript": "~5.3.3"
   }
 }

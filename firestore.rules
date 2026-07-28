@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isClinicStaff(clinicId) {
+      return request.auth != null
+        && request.auth.token.clinicId == clinicId;
+    }
+
+    match /clinics/{clinicId} {
+      allow read: if isClinicStaff(clinicId);
+      allow write: if isClinicStaff(clinicId);
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if isClinicStaff(resource.data.clinicId);
+      allow create: if false; // Created by Cloud Functions (WhatsApp bot)
+      allow update: if isClinicStaff(resource.data.clinicId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'checkedInAt', 'calledAt', 'tokenNumber']);
+    }
+
+    match /waitlist/{entryId} {
+      allow read: if isClinicStaff(resource.data.clinicId);
+      allow write: if false; // Managed by Cloud Functions
+    }
+
+    match /patientSessions/{sessionId} {
+      allow read, write: if false; // Server-only
+    }
+  }
+}

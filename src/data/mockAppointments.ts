@@ -4,10 +4,12 @@
 // Document (Section 4.3). Will be replaced by real Firestore queries later.
 // ---------------------------------------------------------------------------
 
+import type { Appointment } from '../types';
+
 /**
  * Returns a Date object for today at the given hour:minute.
  */
-const todayAt = (hours, minutes = 0) => {
+const todayAt = (hours: number, minutes = 0): Date => {
   const d = new Date();
   d.setHours(hours, minutes, 0, 0);
   return d;
@@ -16,7 +18,7 @@ const todayAt = (hours, minutes = 0) => {
 /**
  * Returns a Date object for tomorrow at the given hour:minute.
  */
-const tomorrowAt = (hours, minutes = 0) => {
+const tomorrowAt = (hours: number, minutes = 0): Date => {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   d.setHours(hours, minutes, 0, 0);
@@ -26,14 +28,14 @@ const tomorrowAt = (hours, minutes = 0) => {
 /**
  * Returns a Date object for yesterday at the given hour:minute.
  */
-const yesterdayAt = (hours, minutes = 0) => {
+const yesterdayAt = (hours: number, minutes = 0): Date => {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   d.setHours(hours, minutes, 0, 0);
   return d;
 };
 
-const MOCK_APPOINTMENTS = [
+const MOCK_APPOINTMENTS: Appointment[] = [
   // --- Today's appointments (mix of statuses) ---
   {
     id: 'apt-001',
@@ -70,6 +72,9 @@ const MOCK_APPOINTMENTS = [
     status: 'IN_PROGRESS',
     bookingCode: 'AP10',
     source: 'whatsapp',
+    tokenNumber: 3,
+    checkedInAt: todayAt(9, 52),
+    calledAt: todayAt(10, 3),
   },
   {
     id: 'apt-004',
@@ -82,6 +87,8 @@ const MOCK_APPOINTMENTS = [
     status: 'CHECKED_IN',
     bookingCode: 'SD10',
     source: 'walk-in',
+    tokenNumber: 4,
+    checkedInAt: todayAt(10, 12),
   },
   {
     id: 'apt-005',

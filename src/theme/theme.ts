@@ -1,55 +1,46 @@
 import { MD3LightTheme, configureFonts } from 'react-native-paper';
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
+import type {
+  AppointmentStatusMap,
+  WaitlistStatusMap,
+} from '../types';
 
 // ---------------------------------------------------------------------------
 // 1. COLOR TOKENS
 // ---------------------------------------------------------------------------
-// Medical-trust blue + white palette — PRD §6.8
-// No purple, no violet, no neon — clinical and operational.
 
-const palette = {
-  // Primary
+export const palette = {
   primary: '#2563EB',
-  primaryDark: '#1D4ED8',      // pressed / active states
-  primaryLight: '#DBEAFE',     // tinted backgrounds, selected rows
-  primaryContainer: '#EFF6FF', // very light tint for subtle highlights
+  primaryDark: '#1D4ED8',
+  primaryLight: '#DBEAFE',
+  primaryContainer: '#EFF6FF',
 
-  // Backgrounds
   background: '#FFFFFF',
   surface: '#FFFFFF',
-  surfaceVariant: '#F8FAFC',   // off-white for cards, sections, list items
+  surfaceVariant: '#F8FAFC',
 
-  // Status
-  success: '#16A34A',          // confirmed, completed
-  successLight: '#DCFCE7',     // success chip / badge background
-  warning: '#D97706',          // waitlist, attention-needed
-  warningLight: '#FEF3C7',     // warning chip / badge background
-  error: '#DC2626',            // cancelled, no-show, destructive actions
-  errorLight: '#FEE2E2',       // error chip / badge background
-  neutral: '#64748B',          // checked-in, secondary status
-  neutralLight: '#F1F5F9',     // neutral chip / badge background
+  success: '#16A34A',
+  successLight: '#DCFCE7',
+  warning: '#D97706',
+  warningLight: '#FEF3C7',
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+  neutral: '#64748B',
+  neutralLight: '#F1F5F9',
 
-  // Text
   textPrimary: '#0F172A',
   textSecondary: '#64748B',
-  textOnPrimary: '#FFFFFF',    // white text on primary-coloured buttons
+  textOnPrimary: '#FFFFFF',
   textDisabled: '#94A3B8',
 
-  // Borders & dividers
   border: '#E2E8F0',
   divider: '#F1F5F9',
 
-  // Misc
-  overlay: 'rgba(15, 23, 42, 0.4)', // modal / bottom-sheet scrim
-};
+  overlay: 'rgba(15, 23, 42, 0.4)',
+} as const;
 
-// ---------------------------------------------------------------------------
-// 2. SPACING SCALE (strict 4 px base — PRD §6.8 item 3)
-// ---------------------------------------------------------------------------
-// Usage: spacing.xs = 4, spacing.sm = 8, etc.
-
-const spacing = {
-  xxs: 2,  // hairline, rarely needed
+export const spacing = {
+  xxs: 2,
   xs: 4,
   sm: 8,
   md: 12,
@@ -57,29 +48,17 @@ const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
-};
+} as const;
 
-// ---------------------------------------------------------------------------
-// 3. BORDER RADIUS
-// ---------------------------------------------------------------------------
-// Cards: 12 px, Buttons / inputs: 8 px — PRD §6.8 item 4
-
-const radius = {
+export const radius = {
   xs: 4,
-  sm: 8,   // buttons, text inputs, chips
-  md: 12,  // cards, modals, bottom sheets
-  lg: 16,  // full-screen sheets (rare)
-  full: 9999, // circular avatars / badges
-};
+  sm: 8,
+  md: 12,
+  lg: 16,
+  full: 9999,
+} as const;
 
-// ---------------------------------------------------------------------------
-// 4. ELEVATION / SHADOW
-// ---------------------------------------------------------------------------
-// Soft shadows only — elevation 2–3. No hard drop-shadows, no neon glow.
-// These are plain objects usable via `style` props on RN views; React Native
-// Paper's elevation prop (0–5) can also be used where Paper components allow.
-
-const shadows = {
+export const shadows = {
   none: {
     shadowColor: 'transparent',
     shadowOffset: { width: 0, height: 0 },
@@ -108,13 +87,7 @@ const shadows = {
     shadowRadius: 8,
     elevation: 3,
   },
-};
-
-// ---------------------------------------------------------------------------
-// 5. TYPOGRAPHY (system font — PRD §6.8 item 2)
-// ---------------------------------------------------------------------------
-// San Francisco (iOS) / Roboto (Android) via React Native Paper's defaults.
-// No custom decorative fonts. Headings bold. Body regular. No italic.
+} as const;
 
 const systemFont = Platform.select({
   ios: 'System',
@@ -125,121 +98,112 @@ const systemFont = Platform.select({
 const fontConfig = {
   displayLarge: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 22,
     lineHeight: 28,
     letterSpacing: 0,
   },
   displayMedium: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 20,
     lineHeight: 26,
     letterSpacing: 0,
   },
   displaySmall: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: 0,
   },
-
   headlineLarge: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 22,
     lineHeight: 28,
     letterSpacing: 0,
   },
   headlineMedium: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 20,
     lineHeight: 26,
     letterSpacing: 0,
   },
   headlineSmall: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: 0,
   },
-
   titleLarge: {
     fontFamily: systemFont,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: 0,
   },
   titleMedium: {
     fontFamily: systemFont,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     fontSize: 16,
     lineHeight: 22,
     letterSpacing: 0.15,
   },
   titleSmall: {
     fontFamily: systemFont,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.1,
   },
-
   bodyLarge: {
     fontFamily: systemFont,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     fontSize: 16,
     lineHeight: 24,
     letterSpacing: 0.15,
   },
   bodyMedium: {
     fontFamily: systemFont,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.25,
   },
   bodySmall: {
     fontFamily: systemFont,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.4,
   },
-
   labelLarge: {
     fontFamily: systemFont,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.1,
   },
   labelMedium: {
     fontFamily: systemFont,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,
   },
   labelSmall: {
     fontFamily: systemFont,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     fontSize: 11,
     lineHeight: 16,
     letterSpacing: 0.5,
   },
 };
 
-// ---------------------------------------------------------------------------
-// 6. APPOINTMENT STATUS MAP
-// ---------------------------------------------------------------------------
-// Centralised color/label mapping so every screen renders statuses the same.
-
-const appointmentStatus = {
+export const appointmentStatus: AppointmentStatusMap = {
   BOOKED: {
     label: 'Booked',
     color: palette.primary,
@@ -277,7 +241,7 @@ const appointmentStatus = {
   },
 };
 
-const waitlistStatus = {
+export const waitlistStatus: WaitlistStatusMap = {
   WAITING: {
     label: 'Waiting',
     color: palette.warning,
@@ -300,17 +264,12 @@ const waitlistStatus = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// 7. REACT NATIVE PAPER THEME OBJECT
-// ---------------------------------------------------------------------------
-
 const theme = {
   ...MD3LightTheme,
 
   colors: {
     ...MD3LightTheme.colors,
 
-    // Map palette into Paper's expected keys
     primary: palette.primary,
     primaryContainer: palette.primaryContainer,
     onPrimary: palette.textOnPrimary,
@@ -362,11 +321,8 @@ const theme = {
 
   fonts: configureFonts({ config: fontConfig }),
 
-  roundness: radius.sm, // Paper uses `roundness` as the base — 8 px
+  roundness: radius.sm,
 
-  // -----------------------------------------------------------------------
-  // Custom extensions (not part of Paper, consumed by our own components)
-  // -----------------------------------------------------------------------
   custom: {
     palette,
     spacing,
@@ -377,5 +333,6 @@ const theme = {
   },
 };
 
-export { palette, spacing, radius, shadows, appointmentStatus, waitlistStatus };
+export type AppTheme = typeof theme;
+
 export default theme;
