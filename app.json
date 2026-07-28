@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Clinic Front-Desk OS",
+    "slug": "clinic-front-desk-os",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.clinicfrontdesk.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "platforms": [
+      "android",
+      "web"
+    ],
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
