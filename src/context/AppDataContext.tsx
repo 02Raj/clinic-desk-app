@@ -24,7 +24,7 @@ import {
   appReducer,
   createInitialState,
 } from '../store/appStore';
-import { toDateKey, endOfDay } from '../utils/dateUtils';
+import { toISTDateKey, endOfDay } from '../utils/dateUtils';
 import type {
   AppDataContextValue,
   Appointment,
@@ -52,7 +52,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ clinicId, chil
       return undefined;
     }
 
-    const todayKey = toDateKey(new Date());
+    const todayKey = toISTDateKey();
     const appointmentsRef = collection(db, 'appointments');
     const q = query(
       appointmentsRef,

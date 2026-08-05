@@ -59,6 +59,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (isFirebaseConfigured() && auth) {
       try {
         const credential = await signInWithEmailAndPassword(auth, email, password);
+        // Refresh token so custom claims (clinicId) are picked up after admin setup
+        await credential.user.getIdToken(true);
         setUser(credential.user);
         setClinicId(env.defaultClinicId);
         return { success: true };

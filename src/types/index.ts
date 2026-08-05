@@ -13,8 +13,6 @@ export type AppointmentSource = 'whatsapp' | 'walk-in';
 
 export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'ACCEPTED' | 'EXPIRED';
 
-export type ClinicLanguage = 'en' | 'hi';
-
 export interface Appointment {
   id: string;
   clinicId: string;
@@ -43,7 +41,6 @@ export interface Clinic {
   workingHours: WorkingHours;
   slotDurationMinutes: number;
   avgConsultationMinutes: number;
-  defaultLanguage: ClinicLanguage;
   doctorIds: string[];
 }
 

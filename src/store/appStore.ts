@@ -19,7 +19,6 @@ export const DEFAULT_CLINIC: Clinic = {
   },
   slotDurationMinutes: 30,
   avgConsultationMinutes: 15,
-  defaultLanguage: 'en',
   doctorIds: ['doc-01'],
 };
 

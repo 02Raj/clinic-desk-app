@@ -12,7 +12,6 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { palette, spacing, radius } from '../theme/theme';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
-import type { ClinicLanguage } from '../types';
 import ScreenHeader from '../components/ui/ScreenHeader';
 import ElevatedCard from '../components/ui/ElevatedCard';
 import PatientAvatar from '../components/ui/PatientAvatar';
@@ -28,7 +27,6 @@ const SettingsScreen: React.FC = () => {
   const [endTime, setEndTime] = useState(clinic.workingHours.end);
   const [slotDuration, setSlotDuration] = useState(String(clinic.slotDurationMinutes));
   const [avgConsultation, setAvgConsultation] = useState(String(clinic.avgConsultationMinutes));
-  const [language, setLanguage] = useState<ClinicLanguage>(clinic.defaultLanguage);
   const [snackbar, setSnackbar] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -43,11 +41,10 @@ const SettingsScreen: React.FC = () => {
       },
       slotDurationMinutes: parseInt(slotDuration, 10) || 30,
       avgConsultationMinutes: parseInt(avgConsultation, 10) || 15,
-      defaultLanguage: language,
     });
     setSaving(false);
     setSnackbar(true);
-  }, [name, startTime, endTime, slotDuration, avgConsultation, language, clinic.workingHours, updateClinicSettings]);
+  }, [name, startTime, endTime, slotDuration, avgConsultation, clinic.workingHours, updateClinicSettings]);
 
   return (
     <View style={screenStyles.screen}>
@@ -122,22 +119,6 @@ const SettingsScreen: React.FC = () => {
             <Text variant="bodySmall" style={styles.hint}>
               Used for WhatsApp queue wait-time estimates
             </Text>
-          </View>
-        </ElevatedCard>
-
-        <SectionLabel>Language</SectionLabel>
-        <ElevatedCard>
-          <View style={styles.cardBody}>
-            <TextInput
-              mode="outlined"
-              label="Patient language (en / hi)"
-              value={language}
-              onChangeText={(text) => setLanguage(text as ClinicLanguage)}
-              style={styles.input}
-              outlineColor={palette.border}
-              activeOutlineColor={palette.primary}
-              left={<TextInput.Icon icon="translate" />}
-            />
           </View>
         </ElevatedCard>
 

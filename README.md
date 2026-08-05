@@ -12,7 +12,7 @@ WhatsApp-first booking and queue management for small Indian clinics. Patients i
 | FR-15 | Check-in by booking code | ✅ Updates queue |
 | FR-16 | Live queue + Call Next | ✅ Real-time sync across tabs |
 | FR-17 | Weekly summary screen | ✅ |
-| FR-18 | Clinic settings | ✅ Hours, slot duration, language |
+| FR-18 | Clinic settings | ✅ Hours, slot duration |
 
 ### Backend (Cloud Functions)
 | PRD | Feature | Status |
@@ -24,7 +24,7 @@ WhatsApp-first booking and queue management for small Indian clinics. Patients i
 | FR-12 | Weekly WhatsApp summary | ✅ `weeklySummary` |
 | FR-20 | Queue status via WhatsApp | ✅ STATUS keyword |
 | FR-21 | Approaching-turn notifications | ✅ `notifyApproachingTurn` |
-| FR-19 | English + Hindi messages | ✅ Bilingual templates |
+| FR-19 | English-only WhatsApp messages | ✅ |
 
 ## Quick start (local demo — no Firebase)
 
@@ -40,7 +40,7 @@ Try the full flow:
 2. **Check In** — enter code `VS11` or `MG11` (Booked/Confirmed patients)
 3. **Queue** — see checked-in patients, tap **Call Next**
 4. **Report** — weekly stats
-5. **Settings** — clinic hours, slot duration, language
+5. **Settings** — clinic hours, slot duration
 
 ## Production setup (Firebase + WhatsApp)
 

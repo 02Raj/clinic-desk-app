@@ -62,6 +62,16 @@ export const toDateKey = (date: Date): string => {
   return `${y}-${m}-${day}`;
 };
 
+/** Today's date key in IST — matches Cloud Functions / WhatsApp bot dateKey. */
+export const toISTDateKey = (date = new Date()): string => {
+  const utcMs = date.getTime() + date.getTimezoneOffset() * 60 * 1000;
+  const ist = new Date(utcMs + 5.5 * 60 * 60 * 1000);
+  const y = ist.getUTCFullYear();
+  const m = String(ist.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(ist.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 /** Monday of the week containing `date`. */
 export const startOfWeek = (date: Date): Date => {
   const d = new Date(date);
