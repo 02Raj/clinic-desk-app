@@ -1,6 +1,6 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { defineSecret } = require('firebase-functions/params');
+const { defineSecret, defineString } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const flow = require('./whatsappFlow');
@@ -17,6 +17,7 @@ const whatsappSecrets = [whatsappAccessSecret, whatsappVerifySecret];
 const twilioAccountSid = defineSecret('TWILIO_ACCOUNT_SID');
 const twilioAuthToken = defineSecret('TWILIO_AUTH_TOKEN');
 const twilioWhatsappFrom = defineSecret('TWILIO_WHATSAPP_FROM');
+const sarvamApiKey = defineString('SARVAM_API_KEY', { default: '' });
 const twilioSecrets = [twilioAccountSid, twilioAuthToken, twilioWhatsappFrom];
 
 // ---------------------------------------------------------------------------
@@ -277,6 +278,7 @@ exports.twilioWebhook = onRequest(
         accountSid: () => String(twilioAccountSid.value() || '').trim(),
         authToken: () => String(twilioAuthToken.value() || '').trim(),
         whatsappFrom: () => String(twilioWhatsappFrom.value() || '').trim(),
+        sarvamApiKey: () => String(sarvamApiKey.value() || '').trim(),
       });
       await processTwilio(body);
       res.status(200).send('<Response></Response>');
@@ -1010,3 +1012,6 @@ exports.extendClinicHours = onRequest(async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+
+const { clinicSignup } = require('./clinicSignup');
+exports.clinicSignup = clinicSignup;

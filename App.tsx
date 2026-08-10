@@ -11,63 +11,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider, Text } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import theme, { palette, spacing, radius } from './src/theme/theme';
+import { APP_TABS } from './src/config/navigation';
+import { useBreakpoint } from './src/hooks/useBreakpoint';
+import WebShell from './src/components/layout/WebShell';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppDataProvider } from './src/context/AppDataContext';
 import LoginScreen from './src/screens/LoginScreen';
-import TodaysBookingsScreen from './src/screens/TodaysBookingsScreen';
-import CheckInScreen from './src/screens/CheckInScreen';
-import LiveQueueScreen from './src/screens/LiveQueueScreen';
-import WeeklySummaryScreen from './src/screens/WeeklySummaryScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-
-type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-
-interface TabConfig {
-  key: string;
-  title: string;
-  icon: IconName;
-  activeIcon: IconName;
-  screen: React.FC;
-}
-
-const TABS: TabConfig[] = [
-  {
-    key: 'bookings',
-    title: 'Bookings',
-    icon: 'calendar-check-outline',
-    activeIcon: 'calendar-check',
-    screen: TodaysBookingsScreen,
-  },
-  {
-    key: 'checkin',
-    title: 'Check In',
-    icon: 'account-check-outline',
-    activeIcon: 'account-check',
-    screen: CheckInScreen,
-  },
-  {
-    key: 'queue',
-    title: 'Queue',
-    icon: 'account-group-outline',
-    activeIcon: 'account-group',
-    screen: LiveQueueScreen,
-  },
-  {
-    key: 'report',
-    title: 'Report',
-    icon: 'chart-bar',
-    activeIcon: 'chart-bar',
-    screen: WeeklySummaryScreen,
-  },
-  {
-    key: 'settings',
-    title: 'Settings',
-    icon: 'cog-outline',
-    activeIcon: 'cog',
-    screen: SettingsScreen,
-  },
-];
+import LandingScreen from './src/screens/landing/LandingScreen';
+import ClinicOnboardingScreen from './src/screens/landing/ClinicOnboardingScreen';
+import SignupSuccessScreen from './src/screens/landing/SignupSuccessScreen';
 
 interface BottomTabBarProps {
   activeIndex: number;
@@ -76,7 +29,7 @@ interface BottomTabBarProps {
 
 const BottomTabBar: React.FC<BottomTabBarProps> = React.memo(({ activeIndex, onTabPress }) => (
   <View style={styles.tabBar}>
-    {TABS.map((tab, i) => {
+    {APP_TABS.map((tab, i) => {
       const isActive = i === activeIndex;
       return (
         <TouchableOpacity
@@ -113,7 +66,36 @@ const BottomTabBar: React.FC<BottomTabBarProps> = React.memo(({ activeIndex, onT
 
 const MainApp: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const ActiveScreen = TABS[activeIndex].screen;
+  const [showLogin, setShowLogin] = useState(false);
+  const { isDesktopWeb } = useBreakpoint();
+  const { isAuthenticated } = useAuth();
+  const ActiveScreen = APP_TABS[activeIndex].screen;
+
+  if (!isAuthenticated) {
+    if (!showLogin) {
+      return (
+        <View style={styles.screenContainer}>
+          <LandingScreen
+            onGetStarted={() => setShowLogin(true)}
+            onSignIn={() => setShowLogin(true)}
+          />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.screenContainer}>
+        <LoginScreen onBackToLanding={() => setShowLogin(false)} />
+      </View>
+    );
+  }
+
+  if (isDesktopWeb) {
+    return (
+      <WebShell activeIndex={activeIndex} onTabPress={setActiveIndex}>
+        <ActiveScreen />
+      </WebShell>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -127,6 +109,8 @@ const MainApp: React.FC = () => {
 
 const AppRoot: React.FC = () => {
   const { isAuthenticated, loading, clinicId } = useAuth();
+  const [publicView, setPublicView] = useState<'landing' | 'onboarding' | 'signup-success' | 'login'>('landing');
+  const [signupEmail, setSignupEmail] = useState('');
 
   if (loading) {
     return (
@@ -137,6 +121,42 @@ const AppRoot: React.FC = () => {
   }
 
   if (!isAuthenticated) {
+    if (Platform.OS === 'web') {
+      if (publicView === 'landing') {
+        return (
+          <View style={styles.landingRoot}>
+            <LandingScreen
+              onGetStarted={() => setPublicView('onboarding')}
+              onSignIn={() => setPublicView('login')}
+            />
+          </View>
+        );
+      }
+      if (publicView === 'onboarding') {
+        return (
+          <ClinicOnboardingScreen
+            onComplete={(email) => {
+              setSignupEmail(email);
+              setPublicView('signup-success');
+            }}
+            onBack={() => setPublicView('landing')}
+            onSignIn={() => setPublicView('login')}
+          />
+        );
+      }
+      if (publicView === 'signup-success') {
+        return (
+          <SignupSuccessScreen
+            email={signupEmail}
+            onGoToLogin={() => setPublicView('login')}
+            onBackToHome={() => setPublicView('landing')}
+          />
+        );
+      }
+      return (
+        <LoginScreen onBackToLanding={() => setPublicView('landing')} />
+      );
+    }
     return <LoginScreen />;
   }
 
@@ -181,6 +201,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: palette.background,
   },
+  landingRoot: {
+    flex: 1,
+    ...Platform.select({
+      web: { height: '100vh', overflow: 'hidden' } as unknown as ViewStyle,
+      default: {},
+    }),
+  },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: palette.surface,
@@ -190,16 +217,17 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingHorizontal: spacing.xs,
     ...Platform.select({
-      web: { boxShadow: '0px -2px 12px rgba(15, 23, 42, 0.06)' } as ViewStyle,
+      web: { boxShadow: '0px -4px 20px rgba(15, 23, 42, 0.05)' } as ViewStyle,
       default: {
         shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
         elevation: 8,
       },
     }),
   },
+
   tabItem: {
     flex: 1,
     alignItems: 'center',

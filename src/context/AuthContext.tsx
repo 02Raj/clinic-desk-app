@@ -34,9 +34,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (isFirebaseConfigured() && auth) {
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         setUser(firebaseUser);
-        setClinicId(firebaseUser?.uid ? env.defaultClinicId : null);
+        if (firebaseUser) {
+          try {
+            const tokenResult = await firebaseUser.getIdTokenResult();
+            const claimClinicId =
+              typeof tokenResult.claims.clinicId === 'string'
+                ? tokenResult.claims.clinicId
+                : env.defaultClinicId;
+            setClinicId(claimClinicId);
+          } catch {
+            setClinicId(env.defaultClinicId);
+          }
+        } else {
+          setClinicId(null);
+        }
         setLoading(false);
       });
       return unsubscribe;
@@ -59,10 +72,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (isFirebaseConfigured() && auth) {
       try {
         const credential = await signInWithEmailAndPassword(auth, email, password);
-        // Refresh token so custom claims (clinicId) are picked up after admin setup
-        await credential.user.getIdToken(true);
+        const tokenResult = await credential.user.getIdTokenResult();
+        const claimClinicId =
+          typeof tokenResult.claims.clinicId === 'string'
+            ? tokenResult.claims.clinicId
+            : env.defaultClinicId;
         setUser(credential.user);
-        setClinicId(env.defaultClinicId);
+        setClinicId(claimClinicId);
         return { success: true };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Login failed';

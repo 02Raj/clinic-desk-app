@@ -11,6 +11,7 @@ import React, {
 import {
   collection,
   doc,
+  getDocs,
   onSnapshot,
   query,
   updateDoc,
@@ -24,7 +25,8 @@ import {
   appReducer,
   createInitialState,
 } from '../store/appStore';
-import { toISTDateKey, endOfDay } from '../utils/dateUtils';
+import { toISTDateKey, endOfDay, isSameDay } from '../utils/dateUtils';
+import { mapFirestoreAppointment } from '../utils/appointmentMapper';
 import type {
   AppDataContextValue,
   Appointment,
@@ -63,16 +65,9 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ clinicId, chil
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const appointments: Appointment[] = snapshot.docs.map((d) => {
-          const data = d.data();
-          return {
-            id: d.id,
-            ...data,
-            scheduledTime: data.scheduledTime?.toDate?.() || new Date(data.scheduledTime),
-            checkedInAt: data.checkedInAt?.toDate?.() || undefined,
-            calledAt: data.calledAt?.toDate?.() || undefined,
-          } as Appointment;
-        });
+        const appointments: Appointment[] = snapshot.docs.map((d) =>
+          mapFirestoreAppointment(d.id, d.data()),
+        );
         dispatch({ type: ACTION_TYPES.SET_APPOINTMENTS, payload: appointments });
         setLoading(false);
         setError(null);
@@ -85,6 +80,52 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ clinicId, chil
 
     return unsubscribe;
   }, [effectiveClinicId]);
+
+  const fetchAppointmentsForDate = useCallback(
+    async (date: Date): Promise<Appointment[]> => {
+      if (!isFirebaseConfigured() || !db) {
+        return state.appointments.filter((apt) => isSameDay(apt.scheduledTime, date));
+      }
+
+      const dateKey = toISTDateKey(date);
+      const q = query(
+        collection(db, 'appointments'),
+        where('clinicId', '==', effectiveClinicId),
+        where('dateKey', '==', dateKey),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs
+        .map((d) => mapFirestoreAppointment(d.id, d.data()))
+        .sort((a, b) => a.scheduledTime.getTime() - b.scheduledTime.getTime());
+    },
+    [effectiveClinicId, state.appointments],
+  );
+
+  const fetchAppointmentsInRange = useCallback(
+    async (start: Date, end: Date): Promise<Appointment[]> => {
+      if (!isFirebaseConfigured() || !db) {
+        const endOfRange = endOfDay(end);
+        return state.appointments.filter((apt) => {
+          const t = new Date(apt.scheduledTime);
+          return t >= start && t <= endOfRange;
+        });
+      }
+
+      const startKey = toISTDateKey(start);
+      const endKey = toISTDateKey(end);
+      const q = query(
+        collection(db, 'appointments'),
+        where('clinicId', '==', effectiveClinicId),
+        where('dateKey', '>=', startKey),
+        where('dateKey', '<=', endKey),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs
+        .map((d) => mapFirestoreAppointment(d.id, d.data()))
+        .sort((a, b) => a.scheduledTime.getTime() - b.scheduledTime.getTime());
+    },
+    [effectiveClinicId, state.appointments],
+  );
 
   const checkInByCode = useCallback(
     async (code: string): Promise<CheckInResult> => {
@@ -222,6 +263,8 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ clinicId, chil
       callNext,
       updateClinicSettings,
       getWeeklyStats,
+      fetchAppointmentsForDate,
+      fetchAppointmentsInRange,
       isFirebaseMode: isFirebaseConfigured(),
     }),
     [
@@ -232,6 +275,8 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ clinicId, chil
       callNext,
       updateClinicSettings,
       getWeeklyStats,
+      fetchAppointmentsForDate,
+      fetchAppointmentsInRange,
     ],
   );
 

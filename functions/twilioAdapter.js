@@ -10,7 +10,20 @@ function parseTwilioPhone(waAddress) {
   return waAddress.replace('whatsapp:', '').replace('+', '');
 }
 
-function buildFlowMessage(from, body, messageSid) {
+function buildFlowMessage(from, body, messageSid, buttonPayload) {
+  const selection = buttonPayload || body || '';
+  if (buttonPayload) {
+    return {
+      type: 'interactive',
+      from: parseTwilioPhone(from),
+      id: messageSid || `twilio-${Date.now()}`,
+      interactive: {
+        type: 'button_reply',
+        button_reply: { id: buttonPayload, title: body || buttonPayload },
+      },
+      text: { body: selection },
+    };
+  }
   return {
     type: 'text',
     from: parseTwilioPhone(from),

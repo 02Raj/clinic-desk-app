@@ -137,5 +137,7 @@ export interface AppDataContextValue {
   callNext: () => Promise<void>;
   updateClinicSettings: (settings: Partial<Clinic>) => Promise<void>;
   getWeeklyStats: () => WeeklyStats;
+  fetchAppointmentsForDate: (date: Date) => Promise<Appointment[]>;
+  fetchAppointmentsInRange: (start: Date, end: Date) => Promise<Appointment[]>;
   isFirebaseMode: boolean;
 }

@@ -124,18 +124,46 @@ async function showMainMenu(clinic, to, phoneNumberId, sessionRef, patientName, 
     ? `👋 Welcome back, *${patientName}*!`
     : `👋 Welcome to *${clinic.name || 'our clinic'}*!`;
 
-  const body = `${greeting}\n\nHow can we help you today?\n\n1️⃣ Book Appointment\n2️⃣ View Appointment\n3️⃣ Cancel Appointment\n4️⃣ Clinic Information\n\nReply with a number (1–4) or type *BOOK*, *VIEW*, *CANCEL*, or *INFO*.`;
+  const body = `${greeting}\n\nHow can we help you today?`;
 
-  await send.text(phoneNumberId, to, body);
+  if (phoneNumberId === 'twilio' && send.list) {
+    await send.list(phoneNumberId, to, {
+      body,
+      button: 'Select option',
+      items: [
+        { id: 'menu_1', item: '📅 Book Appointment', description: 'Book a new visit' },
+        { id: 'menu_2', item: '👁 View Appointment', description: 'See today\'s booking' },
+        { id: 'menu_3', item: '❌ Cancel Appointment', description: 'Cancel a booking' },
+        { id: 'menu_4', item: 'ℹ️ Clinic Info', description: 'Hours, fees, location' },
+      ],
+    });
+  } else {
+    const textBody = `${body}\n\n1️⃣ Book Appointment\n2️⃣ View Appointment\n3️⃣ Cancel Appointment\n4️⃣ Clinic Information\n\nReply with a number (1–4) or type *BOOK*, *VIEW*, *CANCEL*, or *INFO*.`;
+    await send.text(phoneNumberId, to, textBody);
+  }
+
   await setSession(sessionRef, 'menu', { patientName: patientName || null });
 }
 
 async function showDoctorList(clinic, to, phoneNumberId, sessionRef, send, db) {
   const doctors = await getDoctorsForClinic(db, clinic);
-  const lines = doctors.map((d, i) => `${i + 1}. ${d.name} — ${d.title}`).join('\n');
-  const body = `Please select the doctor you'd like to consult.\n\n${lines}\n\nReply with the doctor number.`;
 
-  await send.text(phoneNumberId, to, body);
+  if (phoneNumberId === 'twilio' && send.list) {
+    await send.list(phoneNumberId, to, {
+      body: 'Please select the doctor you\'d like to consult.',
+      button: 'Choose doctor',
+      items: doctors.map((d, i) => ({
+        id: `doctor_${i + 1}`,
+        item: d.name.slice(0, 24),
+        description: `${d.title} • ₹${d.consultationFee || 500}`,
+      })),
+    });
+  } else {
+    const lines = doctors.map((d, i) => `${i + 1}. ${d.name} — ${d.title}`).join('\n');
+    const body = `Please select the doctor you'd like to consult.\n\n${lines}\n\nReply with the doctor number.`;
+    await send.text(phoneNumberId, to, body);
+  }
+
   await setSession(sessionRef, 'booking_doctor', {
     doctors: doctors.map((d) => ({
       id: d.id,
@@ -151,15 +179,38 @@ async function showDoctorProfile(clinic, to, phoneNumberId, sessionRef, doctor, 
   const slots = buildSlotsForDay(clinic, today);
   const nextSlot = slots[0]?.label || 'No slots today';
 
-  const body = `*${doctor.name}*\n🩺 ${doctor.title}\n💰 Consultation Fee: ₹${doctor.consultationFee}\n📅 Available Today — Next Slot: ${nextSlot}\n\nReply *1* to Continue\nReply *2* to Select Another Doctor`;
+  const body = `*${doctor.name}*\n🩺 ${doctor.title}\n💰 Consultation Fee: ₹${doctor.consultationFee}\n📅 Available Today — Next Slot: ${nextSlot}`;
 
-  await send.text(phoneNumberId, to, body);
+  if (phoneNumberId === 'twilio' && send.buttons) {
+    await send.buttons(phoneNumberId, to, {
+      body,
+      actions: [
+        { id: 'confirm_continue', title: 'Continue' },
+        { id: 'confirm_other_doctor', title: 'Other doctor' },
+      ],
+    });
+  } else {
+    await send.text(phoneNumberId, to, `${body}\n\nReply *1* to Continue\nReply *2* to Select Another Doctor`);
+  }
+
   await setSession(sessionRef, 'booking_doctor_confirm', { doctor });
 }
 
 async function showDatePicker(to, phoneNumberId, sessionRef, send, context) {
-  const body = `Please select your preferred date.\n\n1️⃣ Today\n2️⃣ Tomorrow\n\nReply *1* or *2*.`;
-  await send.text(phoneNumberId, to, body);
+  const body = 'Please select your preferred date.';
+
+  if (phoneNumberId === 'twilio' && send.buttons) {
+    await send.buttons(phoneNumberId, to, {
+      body,
+      actions: [
+        { id: 'date_today', title: 'Today' },
+        { id: 'date_tomorrow', title: 'Tomorrow' },
+      ],
+    });
+  } else {
+    await send.text(phoneNumberId, to, `${body}\n\n1️⃣ Today\n2️⃣ Tomorrow\n\nReply *1* or *2*.`);
+  }
+
   await setSession(sessionRef, 'booking_date', context);
 }
 
@@ -179,11 +230,24 @@ async function showSlots(clinic, to, phoneNumberId, sessionRef, send, context, d
   }
 
   const lines = slots.map((s, i) => `${i + 1}. ${s.label}`).join('\n');
-  await send.text(
-    phoneNumberId,
-    to,
-    `Available time slots for *${label}*\n\n${lines}\n\nReply with the slot number.`,
-  );
+
+  if (phoneNumberId === 'twilio' && send.list) {
+    await send.list(phoneNumberId, to, {
+      body: `Available time slots for *${label}*`,
+      button: 'Choose time',
+      items: slots.map((s, i) => ({
+        id: `slot_${i + 1}`,
+        item: s.label.slice(0, 24),
+        description: `Slot ${i + 1} on ${label}`,
+      })),
+    });
+  } else {
+    await send.text(
+      phoneNumberId,
+      to,
+      `Available time slots for *${label}*\n\n${lines}\n\nReply with the slot number.`,
+    );
+  }
   await setSession(sessionRef, 'booking_slot', {
     ...context,
     dateKey,
@@ -195,23 +259,50 @@ async function askPatientDetails(to, phoneNumberId, sessionRef, send, context, p
   const hint = patientName
     ? `We have your name as *${patientName}*. Reply to confirm or send updated details.\n\n`
     : '';
-  const body = `${hint}Please provide your details in one message:\n\n*Name, Age, Reason for Visit*\n(Gender optional)\n\nExamples:\n• Rahul Sharma, 28, Male, Headache\n• Divyansh Raj, 25, Headache\n• Or one per line:\n  Divyansh Raj\n  25\n  Headache`;
+  const body = `${hint}Please share your details in one message:\n\n*Name, Age, Reason*\n\nExamples:\n• Divyansh Raj, 25, Headache\n• divyansh 25 sar dard\n• One per line:\n  Divyansh Raj\n  25\n  Headache`;
 
   await send.text(phoneNumberId, to, body);
   await setSession(sessionRef, 'booking_details', { ...context, knownName: patientName || null });
+}
+
+function titleCaseWords(text) {
+  return String(text || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 function parsePatientDetails(raw, knownName) {
   const normalized = String(raw || '').trim();
   if (!normalized) return null;
 
+  const isAge = (value) => /^\d{1,3}$/.test(String(value || '').trim());
+
   let parts = normalized.split(',').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 3) {
     parts = normalized.split(/\n+/).map((p) => p.trim()).filter(Boolean);
   }
-  if (parts.length < 2) return null;
 
-  const isAge = (value) => /^\d{1,3}$/.test(String(value || '').trim());
+  if (parts.length < 3) {
+    const tokens = normalized.split(/\s+/).filter(Boolean);
+    const ageIdx = tokens.findIndex((token, index) => index > 0 && isAge(token));
+    if (ageIdx > 0) {
+      const name = tokens.slice(0, ageIdx).join(' ');
+      const age = tokens[ageIdx];
+      const reason = tokens.slice(ageIdx + 1).join(' ');
+      if (name && reason) {
+        return {
+          name: titleCaseWords(name) || knownName || 'Patient',
+          age,
+          gender: 'Not specified',
+          reason: titleCaseWords(reason),
+        };
+      }
+    }
+  }
+
+  if (parts.length < 2) return null;
 
   if (parts.length >= 4) {
     return {
@@ -232,7 +323,6 @@ function parsePatientDetails(raw, knownName) {
   }
 
   if (parts.length === 3 && !isAge(parts[1])) {
-    // Name, Gender, Reason (no age)
     return {
       name: parts[0] || knownName || 'Patient',
       age: 'Not specified',
@@ -262,9 +352,21 @@ async function showConfirmation(clinic, to, phoneNumberId, sessionRef, send, con
     timeZone: 'Asia/Kolkata',
   });
 
-  const body = `Please review your appointment.\n\n👨‍⚕️ Doctor: ${context.doctor.name}\n📅 Date: ${formatDisplayDate(context.dateKey)}\n⏰ Time: ${timeStr}\n👤 Patient: ${context.patient.name}\n🎂 Age: ${context.patient.age}\n⚧ Gender: ${context.patient.gender}\n📝 Reason: ${context.patient.reason}\n💰 Fee: ₹${context.doctor.consultationFee}\n\nReply *1* ✅ Confirm\nReply *2* ✏️ Edit Details\nReply *3* ❌ Cancel`;
+  const body = `Please review your appointment.\n\n👨‍⚕️ Doctor: ${context.doctor.name}\n📅 Date: ${formatDisplayDate(context.dateKey)}\n⏰ Time: ${timeStr}\n👤 Patient: ${context.patient.name}\n🎂 Age: ${context.patient.age}\n⚧ Gender: ${context.patient.gender}\n📝 Reason: ${context.patient.reason}\n💰 Fee: ₹${context.doctor.consultationFee}`;
 
-  await send.text(phoneNumberId, to, body);
+  if (phoneNumberId === 'twilio' && send.buttons) {
+    await send.buttons(phoneNumberId, to, {
+      body,
+      actions: [
+        { id: 'booking_confirm', title: '✅ Confirm' },
+        { id: 'booking_edit', title: '✏️ Edit' },
+        { id: 'booking_cancel', title: '❌ Cancel' },
+      ],
+    });
+  } else {
+    await send.text(phoneNumberId, to, `${body}\n\nReply *1* ✅ Confirm\nReply *2* ✏️ Edit Details\nReply *3* ❌ Cancel`);
+  }
+
   await setSession(sessionRef, 'booking_confirm', context);
 }
 
@@ -363,11 +465,20 @@ async function cancelAppointmentFlow(clinic, to, phoneNumberId, sessionRef, send
     timeZone: 'Asia/Kolkata',
   });
 
-  await send.text(
-    phoneNumberId,
-    to,
-    `Cancel appointment at *${timeStr}*?\n\nReply *1* Yes, cancel\nReply *2* No, keep it`,
-  );
+  const prompt = `Cancel appointment at *${timeStr}*?`;
+
+  if (phoneNumberId === 'twilio' && send.buttons) {
+    await send.buttons(phoneNumberId, to, {
+      body: prompt,
+      actions: [
+        { id: 'cancel_yes', title: 'Yes, cancel' },
+        { id: 'cancel_no', title: 'No, keep it' },
+      ],
+    });
+  } else {
+    await send.text(phoneNumberId, to, `${prompt}\n\nReply *1* Yes, cancel\nReply *2* No, keep it`);
+  }
+
   await setSession(sessionRef, 'cancel_confirm', { appointmentId: apt.id });
 }
 
@@ -379,13 +490,27 @@ async function showClinicInfo(clinic, to, phoneNumberId, send) {
 
 function normalizeChoice(text) {
   const t = text.toLowerCase().trim();
+
+  if (t.startsWith('menu_')) return t.replace('menu_', '');
+  if (t.startsWith('doctor_')) return t.replace('doctor_', '');
+  if (t.startsWith('slot_')) return t.replace('slot_', '');
+  if (t === 'date_today') return '1';
+  if (t === 'date_tomorrow') return '2';
+  if (t === 'confirm_continue') return '1';
+  if (t === 'confirm_other_doctor') return '2';
+  if (t === 'booking_confirm') return '1';
+  if (t === 'booking_edit') return '2';
+  if (t === 'booking_cancel') return '3';
+  if (t === 'cancel_yes') return '1';
+  if (t === 'cancel_no') return '2';
+
   const map = {
     '1': '1', book: '1', 'book appointment': '1',
     '2': '2', view: '2', 'view appointment': '2',
     '3': '3', cancel: '3', 'cancel appointment': '3',
     '4': '4', info: '4', 'clinic information': '4', 'clinic info': '4',
     menu: 'menu', '0': 'menu',
-    yes: 'yes', no: 'no',
+    yes: '1', no: '2',
     confirm: '1', edit: '2',
     today: '1', tomorrow: '2',
     continue: '1',
@@ -411,6 +536,13 @@ async function handleDoctorFlowMessage({
   const state = session.state || 'idle';
   const ctx = session.context || {};
 
+  if (['status', 'queue', 'position', 'here'].includes(text)) {
+    const patientCommands = require('./patientCommands');
+    return patientCommands.handleGlobalPatientCommand(
+      db, clinic, from, phoneNumberId, sessionRef, send, text,
+    );
+  }
+
   if (['menu', '0'].includes(text) || ['hi', 'hello', 'start'].includes(text)) {
     const patientName = await getReturningPatientName(db, clinic.id, `+${from}`);
     await showMainMenu(clinic, from, phoneNumberId, sessionRef, patientName, send);
@@ -434,6 +566,31 @@ async function handleDoctorFlowMessage({
     if (text === '4') {
       await showClinicInfo(clinic, from, phoneNumberId, send);
       return true;
+    }
+    if (send.aiIntent) {
+      const ai = await send.aiIntent(raw, state);
+      const mapped = ai ? normalizeChoice(ai.value || ai.action || '') : null;
+      if (mapped === '1') {
+        await showDoctorList(clinic, from, phoneNumberId, sessionRef, send, db);
+        return true;
+      }
+      if (mapped === '2') {
+        await viewAppointment(clinic, from, phoneNumberId, send, db);
+        await setSession(sessionRef, 'menu', {});
+        return true;
+      }
+      if (mapped === '3') {
+        await cancelAppointmentFlow(clinic, from, phoneNumberId, sessionRef, send, db);
+        return true;
+      }
+      if (mapped === '4') {
+        await showClinicInfo(clinic, from, phoneNumberId, send);
+        return true;
+      }
+      if (ai?.action === 'faq' && ai.value) {
+        await send.text(phoneNumberId, from, ai.value);
+        return true;
+      }
     }
     await send.text(phoneNumberId, from, 'Please reply *1*, *2*, *3*, or *4*. Or type *MENU*.');
     return true;
@@ -500,7 +657,10 @@ async function handleDoctorFlowMessage({
   }
 
   if (state === 'booking_details') {
-    const patient = parsePatientDetails(raw, ctx.knownName);
+    let patient = parsePatientDetails(raw, ctx.knownName);
+    if (!patient && send.aiDetails) {
+      patient = await send.aiDetails(raw, ctx.knownName);
+    }
     if (!patient) {
       await send.text(
         phoneNumberId,

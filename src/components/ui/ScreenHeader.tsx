@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar } from 'react-native-paper';
 import { palette, spacing } from '../../theme/theme';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface ScreenHeaderProps {
   title: string;
@@ -9,19 +10,27 @@ interface ScreenHeaderProps {
   right?: React.ReactNode;
 }
 
-const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title, subtitle, right }) => (
-  <View style={styles.wrapper}>
-    <Appbar.Header mode="small" style={styles.appbar} statusBarHeight={0}>
-      <Appbar.Content
-        title={title}
-        titleStyle={styles.title}
-        subtitle={subtitle}
-        subtitleStyle={styles.subtitle}
-      />
-      {right}
-    </Appbar.Header>
-  </View>
-);
+const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title, subtitle, right }) => {
+  const { isDesktopWeb } = useBreakpoint();
+
+  if (isDesktopWeb) {
+    return null;
+  }
+
+  return (
+    <View style={styles.wrapper}>
+      <Appbar.Header mode="small" style={styles.appbar} statusBarHeight={0}>
+        <Appbar.Content
+          title={title}
+          titleStyle={styles.title}
+          subtitle={subtitle}
+          subtitleStyle={styles.subtitle}
+        />
+        {right}
+      </Appbar.Header>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -35,14 +44,15 @@ const styles = StyleSheet.create({
   },
   title: {
     color: palette.textPrimary,
-    fontWeight: '700',
-    fontSize: 20,
-    letterSpacing: -0.3,
+    fontWeight: '800',
+    fontSize: 22,
+    letterSpacing: -0.5,
   },
   subtitle: {
     color: palette.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
     marginTop: spacing.xxs,
+    fontWeight: '500',
   },
 });
 

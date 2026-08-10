@@ -18,13 +18,16 @@ const ElevatedCard: React.FC<ElevatedCardProps> = ({ children, style, accentColo
 const styles = StyleSheet.create({
   card: {
     backgroundColor: palette.surface,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: palette.border,
     overflow: 'hidden',
     ...Platform.select({
-      web: { boxShadow: '0px 1px 3px rgba(15, 23, 42, 0.06), 0px 4px 12px rgba(15, 23, 42, 0.04)' } as ViewStyle,
-      default: shadows.md,
+      web: {
+        // Opsyfy uses extremely subtle, almost non-existent shadows on its cards, relying on borders
+        boxShadow: '0 4px 12px rgba(27, 42, 32, 0.02)',
+      } as ViewStyle,
+      default: shadows.sm,
     }),
   },
   accent: {

@@ -6,37 +6,42 @@ import type {
 } from '../types';
 
 // ---------------------------------------------------------------------------
-// 1. COLOR TOKENS
+// 1. COLOR TOKENS — Opsyfy Exact Theme
 // ---------------------------------------------------------------------------
 
 export const palette = {
-  primary: '#2563EB',
-  primaryDark: '#1D4ED8',
-  primaryLight: '#DBEAFE',
-  primaryContainer: '#EFF6FF',
+  // ── Brand / Accent ───────────────────────────
+  primary: '#2F483A',        // Opsyfy Button/Dark Green
+  primaryDark: '#1A2921',    // Opsyfy Background Dark Green
+  primaryLight: '#E3E9E5',   // Soft Green Tint
+  primaryContainer: '#2F483A',// For active states on dark backgrounds
 
-  background: '#FFFFFF',
-  surface: '#FFFFFF',
-  surfaceVariant: '#F8FAFC',
+  // ── Surfaces ─────────────────────────────────
+  background: '#F5EFE6',     // Opsyfy Warm Beige (Main App Bg)
+  surface: '#FFFFFF',        // Pure White for inputs/cards
+  surfaceVariant: '#FAF7F2', // Lighter Beige
 
-  success: '#16A34A',
-  successLight: '#DCFCE7',
-  warning: '#D97706',
+  // ── Semantic ─────────────────────────────────
+  success: '#2E7D32',        // Green
+  successLight: '#E8F5E9',
+  warning: '#D97706',        // Warm Amber
   warningLight: '#FEF3C7',
   error: '#DC2626',
   errorLight: '#FEE2E2',
-  neutral: '#64748B',
-  neutralLight: '#F1F5F9',
+  neutral: '#5A6B61',        // Muted Slate/Green
+  neutralLight: '#F5EFE6',   // Warm Beige
 
-  textPrimary: '#0F172A',
-  textSecondary: '#64748B',
-  textOnPrimary: '#FFFFFF',
-  textDisabled: '#94A3B8',
+  // ── Typography ───────────────────────────────
+  textPrimary: '#1B2A20',    // Very Dark Green/Black
+  textSecondary: '#66736A',  // Muted Dark Green
+  textOnPrimary: '#F5EFE6',  // Warm beige text on dark green
+  textDisabled: '#9EAFA3',
 
-  border: '#E2E8F0',
-  divider: '#F1F5F9',
+  // ── Borders ──────────────────────────────────
+  border: '#E6DFD5',         // Soft sand border for cards/inputs
+  divider: '#EBE5DC',        // Lighter sand divider
 
-  overlay: 'rgba(15, 23, 42, 0.4)',
+  overlay: 'rgba(27, 42, 32, 0.4)',
 } as const;
 
 export const spacing = {
@@ -58,6 +63,7 @@ export const radius = {
   full: 9999,
 } as const;
 
+// Opsyfy is flat design, minimal shadows
 export const shadows = {
   none: {
     shadowColor: 'transparent',
@@ -67,24 +73,24 @@ export const shadows = {
     elevation: 0,
   },
   sm: {
-    shadowColor: '#0F172A',
+    shadowColor: '#1B2A20',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.02,
     shadowRadius: 2,
     elevation: 1,
   },
   md: {
-    shadowColor: '#0F172A',
+    shadowColor: '#1B2A20',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
     elevation: 2,
   },
   lg: {
-    shadowColor: '#0F172A',
+    shadowColor: '#1B2A20',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
     elevation: 3,
   },
 } as const;
@@ -95,111 +101,112 @@ const systemFont = Platform.select({
   default: 'System',
 });
 
+// Opsyfy typography: Elegant, elegant serif/sans mix, we'll use clean sans for UI
 const fontConfig = {
   displayLarge: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 22,
     lineHeight: 28,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   displayMedium: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 20,
     lineHeight: 26,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   displaySmall: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   headlineLarge: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 22,
     lineHeight: 28,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   headlineMedium: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 20,
     lineHeight: 26,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   headlineSmall: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   titleLarge: {
     fontFamily: systemFont,
     fontWeight: '700' as const,
     fontSize: 18,
     lineHeight: 24,
-    letterSpacing: 0,
+    letterSpacing: -0.5,
   },
   titleMedium: {
     fontFamily: systemFont,
     fontWeight: '600' as const,
     fontSize: 16,
     lineHeight: 22,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   },
   titleSmall: {
     fontFamily: systemFont,
     fontWeight: '600' as const,
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 0.1,
+    letterSpacing: 0,
   },
   bodyLarge: {
     fontFamily: systemFont,
     fontWeight: '400' as const,
     fontSize: 16,
     lineHeight: 24,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   },
   bodyMedium: {
     fontFamily: systemFont,
     fontWeight: '400' as const,
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 0.25,
+    letterSpacing: 0,
   },
   bodySmall: {
     fontFamily: systemFont,
     fontWeight: '400' as const,
     fontSize: 12,
     lineHeight: 16,
-    letterSpacing: 0.4,
+    letterSpacing: 0,
   },
   labelLarge: {
     fontFamily: systemFont,
     fontWeight: '600' as const,
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 0.1,
+    letterSpacing: 0,
   },
   labelMedium: {
     fontFamily: systemFont,
     fontWeight: '600' as const,
     fontSize: 12,
     lineHeight: 16,
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
   },
   labelSmall: {
     fontFamily: systemFont,
     fontWeight: '600' as const,
     fontSize: 11,
     lineHeight: 16,
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
   },
 };
 
@@ -217,12 +224,12 @@ export const appointmentStatus: AppointmentStatusMap = {
   CHECKED_IN: {
     label: 'Checked In',
     color: palette.neutral,
-    backgroundColor: palette.neutralLight,
+    backgroundColor: palette.border,
   },
   IN_PROGRESS: {
     label: 'In Progress',
-    color: palette.primary,
-    backgroundColor: palette.primaryContainer,
+    color: palette.primaryDark,
+    backgroundColor: palette.primaryLight,
   },
   COMPLETED: {
     label: 'Completed',
@@ -260,7 +267,7 @@ export const waitlistStatus: WaitlistStatusMap = {
   EXPIRED: {
     label: 'Expired',
     color: palette.neutral,
-    backgroundColor: palette.neutralLight,
+    backgroundColor: palette.border,
   },
 };
 
@@ -271,12 +278,12 @@ const theme = {
     ...MD3LightTheme.colors,
 
     primary: palette.primary,
-    primaryContainer: palette.primaryContainer,
+    primaryContainer: palette.primaryLight,
     onPrimary: palette.textOnPrimary,
-    onPrimaryContainer: palette.primary,
+    onPrimaryContainer: palette.primaryDark,
 
     secondary: palette.neutral,
-    secondaryContainer: palette.neutralLight,
+    secondaryContainer: palette.border,
     onSecondary: palette.textOnPrimary,
     onSecondaryContainer: palette.neutral,
 
@@ -311,7 +318,7 @@ const theme = {
 
     elevation: {
       level0: 'transparent',
-      level1: palette.surfaceVariant,
+      level1: palette.surface,
       level2: palette.surfaceVariant,
       level3: palette.surfaceVariant,
       level4: palette.surfaceVariant,
@@ -321,7 +328,7 @@ const theme = {
 
   fonts: configureFonts({ config: fontConfig }),
 
-  roundness: radius.sm,
+  roundness: radius.sm, // Opsyfy has slightly rounded inputs
 
   custom: {
     palette,
