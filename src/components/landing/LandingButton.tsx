@@ -17,6 +17,7 @@ interface LandingButtonProps {
   style?: ViewStyle;
   labelStyle?: TextStyle;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 const LandingButton: React.FC<LandingButtonProps> = ({
@@ -27,11 +28,14 @@ const LandingButton: React.FC<LandingButtonProps> = ({
   style,
   labelStyle,
   fullWidth = false,
+  disabled = false,
 }) => (
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.85}
+    disabled={disabled}
     accessibilityRole="button"
+    accessibilityState={{ disabled }}
     style={[
       styles.base,
       size === 'compact' && styles.compact,
@@ -40,6 +44,7 @@ const LandingButton: React.FC<LandingButtonProps> = ({
       variant === 'outline' && styles.outline,
       variant === 'light' && styles.light,
       fullWidth && styles.fullWidth,
+      disabled && styles.disabled,
       style,
     ]}
   >
@@ -105,6 +110,9 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
     alignSelf: 'stretch',
+  },
+  disabled: {
+    opacity: 0.5,
   },
   label: {
     fontSize: 15,

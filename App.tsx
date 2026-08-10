@@ -21,6 +21,27 @@ import LoginScreen from './src/screens/LoginScreen';
 import LandingScreen from './src/screens/landing/LandingScreen';
 import ClinicOnboardingScreen from './src/screens/landing/ClinicOnboardingScreen';
 import SignupSuccessScreen from './src/screens/landing/SignupSuccessScreen';
+import SetPasswordScreen from './src/screens/SetPasswordScreen';
+import {
+  clearAuthActionParamsFromUrl,
+  getPasswordResetActionFromUrl,
+} from './src/utils/authActionParams';
+
+type PublicView = 'landing' | 'onboarding' | 'signup-success' | 'login' | 'set-password';
+
+function getInitialPublicView(): PublicView {
+  if (Platform.OS === 'web' && getPasswordResetActionFromUrl()) {
+    return 'set-password';
+  }
+  return 'landing';
+}
+
+function getInitialResetOobCode(): string | null {
+  if (Platform.OS === 'web') {
+    return getPasswordResetActionFromUrl()?.oobCode ?? null;
+  }
+  return null;
+}
 
 interface BottomTabBarProps {
   activeIndex: number;
@@ -109,8 +130,21 @@ const MainApp: React.FC = () => {
 
 const AppRoot: React.FC = () => {
   const { isAuthenticated, loading, clinicId } = useAuth();
-  const [publicView, setPublicView] = useState<'landing' | 'onboarding' | 'signup-success' | 'login'>('landing');
+  const [publicView, setPublicView] = useState<PublicView>(getInitialPublicView);
   const [signupEmail, setSignupEmail] = useState('');
+  const [resetOobCode, setResetOobCode] = useState<string | null>(getInitialResetOobCode);
+
+  const handlePasswordSetSuccess = () => {
+    clearAuthActionParamsFromUrl();
+    setResetOobCode(null);
+    setPublicView('login');
+  };
+
+  const handleBackToLoginFromReset = () => {
+    clearAuthActionParamsFromUrl();
+    setResetOobCode(null);
+    setPublicView('login');
+  };
 
   if (loading) {
     return (
@@ -122,6 +156,15 @@ const AppRoot: React.FC = () => {
 
   if (!isAuthenticated) {
     if (Platform.OS === 'web') {
+      if (publicView === 'set-password' && resetOobCode) {
+        return (
+          <SetPasswordScreen
+            oobCode={resetOobCode}
+            onSuccess={handlePasswordSetSuccess}
+            onBackToLogin={handleBackToLoginFromReset}
+          />
+        );
+      }
       if (publicView === 'landing') {
         return (
           <View style={styles.landingRoot}>

@@ -12,9 +12,35 @@ const smtpPort = defineString('SMTP_PORT', { default: '587' });
 const smtpUser = defineString('SMTP_USER', { default: '' });
 const smtpPass = defineString('SMTP_PASS', { default: '' });
 const smtpFrom = defineString('SMTP_FROM', { default: '' });
-const appLoginUrl = defineString('APP_LOGIN_URL', {
-  default: 'https://clinic-desk.vercel.app',
+/** Public Firebase Web API key (safe to embed; used for Auth email OOB). */
+const authWebApiKey = defineString('AUTH_WEB_API_KEY', {
+  default: 'AIzaSyBmlJYSQPcyNP0332P3Y7pSLe4wRUCkZwE',
 });
+const resendApiKey = defineString('RESEND_API_KEY', { default: '' });
+const resendFrom = defineString('RESEND_FROM', {
+  default: 'Clinic Desk <onboarding@resend.dev>',
+});
+const appLoginUrl = defineString('APP_LOGIN_URL', {
+  default: 'https://clinic-desk-app.vercel.app',
+});
+
+
+/** Use the page origin when valid HTTPS (e.g. Vercel deploy); else configured APP_LOGIN_URL. */
+function resolveLoginUrl(req) {
+  const configured = appLoginUrl.value();
+  const origin = req.get('Origin') || '';
+  if (origin.startsWith('https://') && !origin.includes(' ')) {
+    try {
+      const { protocol, hostname } = new URL(origin);
+      if (protocol === 'https:' && hostname) {
+        return `${protocol}//${hostname}`;
+      }
+    } catch {
+      // fall through to configured URL
+    }
+  }
+  return configured;
+}
 
 const REQUIRED_FIELDS = ['clinicName', 'yourName', 'email'];
 
@@ -118,11 +144,24 @@ const clinicSignup = onRequest(
         role: 'owner',
       });
 
-      const loginUrl = appLoginUrl.value();
-      const passwordSetupLink = await getAuth().generatePasswordResetLink(payload.email, {
-        url: loginUrl,
-        handleCodeInApp: false,
-      });
+      const loginUrl = resolveLoginUrl(req);
+      let passwordSetupLink;
+      try {
+        passwordSetupLink = await getAuth().generatePasswordResetLink(payload.email, {
+          url: loginUrl,
+          handleCodeInApp: false,
+        });
+      } catch (linkErr) {
+        const msg = linkErr instanceof Error ? linkErr.message : String(linkErr);
+        if (msg.includes('allowlisted')) {
+          res.status(500).json({
+            success: false,
+            error: `Add "${new URL(loginUrl).hostname}" to Firebase Auth → Settings → Authorized domains, then retry.`,
+          });
+          return;
+        }
+        throw linkErr;
+      }
 
       const batch = db.batch();
 
@@ -175,15 +214,23 @@ const clinicSignup = onRequest(
         loginUrl,
         passwordSetupLink,
         smtp,
+        firebaseWebApiKey: authWebApiKey.value(),
+        resendApiKey: resendApiKey.value(),
+        resendFrom: resendFrom.value(),
       });
 
+      const emailDelivered = emailResult.channel !== 'firestore-mail-queue';
       res.status(200).json({
         success: true,
         clinicId,
         email: payload.email,
         emailChannel: emailResult.channel,
-        message: 'Account created. Check your email to set your password and log in.',
+        emailDelivered,
+        message: emailDelivered
+          ? 'Account created. Check your email to set your password and log in.'
+          : 'Account created, but email could not be delivered. Use Forgot password on the login page.',
       });
+
     } catch (err) {
       console.error('clinicSignup error:', err);
       const message = err instanceof Error ? err.message : 'Signup failed';
