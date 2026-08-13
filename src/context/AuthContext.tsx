@@ -92,7 +92,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       password === DEMO_CREDENTIALS.password;
 
     if (!isDemoLogin) {
-      const message = 'Invalid credentials. Use demo@clinic.local / demo1234 in local mode.';
+      const message = isFirebaseConfigured()
+        ? 'Invalid email or password.'
+        : 'Firebase is not enabled on this site. Add EXPO_PUBLIC_USE_FIREBASE=true and Firebase keys in Vercel env, then redeploy.';
       setError(message);
       return { success: false, error: message };
     }

@@ -38,11 +38,33 @@ firebase login
 firebase deploy --only functions:clinicSignup --project clinic-desk-os
 ```
 
-## Step 4 — Deploy frontend to Vercel
+## Step 4 — Enable Firebase login on Vercel (required)
+
+Signup creates users in Firebase, but **login only works if the Vercel frontend has Firebase env vars**. Without them, the app stays in demo mode and only accepts `demo@clinic.local`.
+
+1. Firebase Console → Project settings → General → **Your apps** → Web app → copy config
+2. Vercel → your project → **Settings** → **Environment Variables**
+3. Add these (Production + Preview):
+
+| Variable | Example |
+|----------|---------|
+| `EXPO_PUBLIC_USE_FIREBASE` | `true` |
+| `EXPO_PUBLIC_FIREBASE_API_KEY` | from Firebase config |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | `clinic-desk-os.firebaseapp.com` |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | `clinic-desk-os` |
+| `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | `clinic-desk-os.firebasestorage.app` |
+| `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | from Firebase config |
+| `EXPO_PUBLIC_FIREBASE_APP_ID` | from Firebase config |
+
+4. **Redeploy** Vercel (Deployments → Redeploy)
+
+After redeploy, login with the email + password you set during signup will work.
+
+## Step 5 — Deploy frontend to Vercel
 
 Push changes and let Vercel redeploy so the new Set Password screen is live.
 
-## Step 5 — Test
+## Step 6 — Test
 
 1. Open https://clinic-desk-app.vercel.app/
 2. Submit clinic onboarding form
